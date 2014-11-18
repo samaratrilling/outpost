@@ -1,4 +1,4 @@
-package outpost.dumb;
+package outpost.group8;
 
 import java.util.*;
 
