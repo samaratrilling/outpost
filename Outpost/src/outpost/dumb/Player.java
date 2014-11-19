@@ -2,6 +2,7 @@ package outpost.dumb;
 
 import java.util.*;
 
+import outpost.group8.PlayerUtil;
 import outpost.sim.Pair;
 import outpost.sim.Point;
 import outpost.sim.movePair;
@@ -40,7 +41,7 @@ public class Player extends outpost.sim.Player {
     }
     
 	//public movePair move(ArrayList<ArrayList<Pair>> king_outpostlist, int noutpost, Point[] grid) {
-    public ArrayList<movePair> move(ArrayList<ArrayList<Pair>> king_outpostlist, Point[] gridin){
+    public ArrayList<movePair> move(ArrayList<ArrayList<Pair>> king_outpostlist, Point[] gridin, int r, int L, int W, int t){
     	counter = counter+1;
     	if (counter % 10 == 0) {
     		for (int i=0; i<100; i++) {
@@ -49,9 +50,12 @@ public class Player extends outpost.sim.Player {
     	}
     	ArrayList<movePair> nextlist = new ArrayList<movePair>();
     	//System.out.printf("Player %d\n", this.id);
+    	/*
     	for (int i=0; i<gridin.length; i++) {
     		grid[i]=new Point(gridin[i]);
-    	}
+    	}*/
+    	grid = outpost.group8.PlayerUtil.getGridCopy(gridin);
+    	
     	ArrayList<Pair> prarr = new ArrayList<Pair>();
     	prarr = king_outpostlist.get(this.id);
     	for (int j =0; j<prarr.size()-1; j++) {
@@ -86,23 +90,22 @@ public class Player extends outpost.sim.Player {
 		}*/
     	//else {
     		ArrayList<Pair> positions = new ArrayList<Pair>();
-    		positions = surround(prarr.get(prarr.size()-1));
+    		positions = PlayerUtil.getTargetPoints(prarr.get(prarr.size()-1),size);
     		boolean gotit=false;
     		while (!gotit) {
     			//Random random = new Random();
 				//int theta = random.nextInt(positions.size());
 				//System.out.println("we are here!!!");
     			if (theta[0]<positions.size()){
-    			if (positions.get(theta[0]).x>=0 && positions.get(theta[0]).y>=0 && positions.get(theta[0]).x<size && positions.get(theta[0]).y<size) {
-    		
+    			
     				if (!PairtoPoint(positions.get(theta[0])).water) {
-    			movePair next = new movePair(prarr.size()-1, positions.get(theta[0]));
-    			nextlist.add(next);
-    			//next.printmovePair();
-    			gotit = true;
-    			break;
-    		}
-    			}
+		    			movePair next = new movePair(prarr.size()-1, positions.get(theta[0]));
+		    			nextlist.add(next);
+		    			//next.printmovePair();
+		    			gotit = true;
+		    			break;
+    				}
+    			
     			}
     		//System.out.println("outpost 0 need to change the direction???");
     		theta[0] = random.nextInt(positions.size());
