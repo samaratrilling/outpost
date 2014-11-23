@@ -2,6 +2,6 @@
 
 javac `find . -name \*.java`
 cd src/
-java outpost.sim.Outpost map0 5 4 1 1 dumb dumb dumb dumb 1000
+java outpost.sim.Outpost map0 5 4 1 true dumb dumb dumb dumb 1000
 cd ..
 
