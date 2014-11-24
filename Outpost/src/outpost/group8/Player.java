@@ -76,7 +76,9 @@ public class Player extends outpost.sim.Player {
     	movePair next = null;
     	
     	// Keep track of the shoreline that we occupy.
-		openShore = MapAnalysis.updateOpenShore(myOutPosts, shorePoints);
+    	if (openShore.isEmpty()) {
+    		openShore = MapAnalysis.updateOpenShore(myOutPosts, shorePoints);
+    	}
 
     	// Target water resources when there are less than 3 Outposts.
     	/*if (myOutPosts.size() < 3) {
@@ -95,18 +97,19 @@ public class Player extends outpost.sim.Player {
 			// Target water resources;
 			for (int i = 0; i < myOutPosts.size(); i++) {
 				Pair pOutpost = myOutPosts.get(i);
-                System.out.printf("pOutpost %d, location %d %d", i, pOutpost.x, pOutpost.y);
 			
-				// If it's already on the shore, keep it there.
+				// If it's already at its destination, keep it there.
 				Location outpost = new Location(pOutpost);
+				/*if ()
 				if (PlayerUtil.arrayListContainsLocation(openShore, outpost)) {
 					targets.put(i, outpost);
 					targetHistory.add(arrayify(new Integer(outpost.x), new Integer(outpost.y)));
 					returnlist.add(new movePair(i, pOutpost));
-				}
+				}*/
 				// We already have a target locked for this outpost
-				else if (targets.containsKey(i)) {
+				if (targets.containsKey(i)) {
 					Location dest = targets.get(i);
+					System.out.println("Target locked. destination: " + dest.x + ", " + dest.y);
 					Location step = null;
 					try {
 						step = PlayerUtil.movePairToDFS(pOutpost, new Point(dest.x, dest.y, Global.grid[dest.x][dest.y].water)).get(0);
@@ -120,7 +123,6 @@ public class Player extends outpost.sim.Player {
 				// This is a new outpost - we need to give it a target piece of shoreline.
 				else {
 					Location dest = new Location(0, 0, false); // dummy value
-                    boolean c = false;
 					double shortestDist = Double.MAX_VALUE;
 					for (Location possDest : openShore) {
 						// Look through all pieces of shore that are not occupied currently
@@ -140,9 +142,8 @@ public class Player extends outpost.sim.Player {
 					// Choose the closest piece of unoccupied shore.
 					System.out.println("destination chosen for outpost at " + outpost.x + ", " + outpost.y + 
 							": " + dest.x + ", " + dest.y);
-                    dest.x = new Integer(4);
-                    dest.y = new Integer(7);
 					targets.put(i, dest);
+					openShore.remove(dest);
 					targetHistory.add(arrayify(outpost.x, outpost.y));
 					Location step = null;
 					try {
