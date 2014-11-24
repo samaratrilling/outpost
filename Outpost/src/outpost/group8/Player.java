@@ -7,7 +7,7 @@ import outpost.sim.Point;
 import outpost.sim.movePair;
 
 public class Player extends outpost.sim.Player {
-	static int size =100;
+	static int size = 100;
 	static Point[] grid = new Point[size*size];
 	static Location[][] locGrid;
 	static Random random = new Random();
@@ -74,7 +74,6 @@ public class Player extends outpost.sim.Player {
     	List<Pair> myOutPosts = king_outpostlist.get(this.id);
     	int [] resources = PlayerUtil.myResources(gridin, myOutPosts);
     	movePair next = null;
-    	int numOutPost = Math.min(resources[0], resources[1]);
     	
     	// Keep track of the shoreline that we occupy.
 		openShore = MapAnalysis.updateOpenShore(myOutPosts, shorePoints);
@@ -96,12 +95,13 @@ public class Player extends outpost.sim.Player {
 			// Target water resources;
 			for (int i = 0; i < myOutPosts.size(); i++) {
 				Pair pOutpost = myOutPosts.get(i);
+                System.out.printf("pOutpost %d, location %d %d", i, pOutpost.x, pOutpost.y);
 			
 				// If it's already on the shore, keep it there.
 				Location outpost = new Location(pOutpost);
 				if (PlayerUtil.arrayListContainsLocation(openShore, outpost)) {
 					targets.put(i, outpost);
-					targetHistory.add(arrayify(outpost.x, outpost.y));
+					targetHistory.add(arrayify(new Integer(outpost.x), new Integer(outpost.y)));
 					returnlist.add(new movePair(i, pOutpost));
 				}
 				// We already have a target locked for this outpost
@@ -120,26 +120,28 @@ public class Player extends outpost.sim.Player {
 				// This is a new outpost - we need to give it a target piece of shoreline.
 				else {
 					Location dest = new Location(0, 0, false); // dummy value
+                    boolean c = false;
 					double shortestDist = Double.MAX_VALUE;
 					for (Location possDest : openShore) {
 						// Look through all pieces of shore that are not occupied currently
 						// AND are not the intended destination of an existing outpost.
 						// Find the closest one.
-						if (!targetHistoryContains(possDest.x, possDest.y, targetHistory)) {
-							if (!PlayerUtil.hashMapContainsLocationAsValue(targets, possDest)) {
-								if (Global.grid[possDest.x][possDest.y].water == false) {
-									double dist = PlayerUtil.manhattanDistance(possDest, outpost);
-									if (dist < shortestDist && dist > 10) {
-										dest = possDest;
-										shortestDist = dist;
-									}
-								}
-							}
-						}
+                        //
+                        if (targetHistoryContains(possDest.x, possDest.y, targetHistory)) continue;
+                        if (PlayerUtil.hashMapContainsLocationAsValue(targets, possDest)) continue;
+                        if (Global.grid[possDest.x][possDest.y].water == false) {
+                            double dist = PlayerUtil.manhattanDistance(possDest, outpost);
+                            if (dist < shortestDist && dist > 10) {
+                                dest = possDest;
+                                shortestDist = dist;
+                            }
+                        }
 					}
 					// Choose the closest piece of unoccupied shore.
 					System.out.println("destination chosen for outpost at " + outpost.x + ", " + outpost.y + 
 							": " + dest.x + ", " + dest.y);
+                    dest.x = new Integer(4);
+                    dest.y = new Integer(7);
 					targets.put(i, dest);
 					targetHistory.add(arrayify(outpost.x, outpost.y));
 					Location step = null;
@@ -167,7 +169,8 @@ public class Player extends outpost.sim.Player {
 	
 	static boolean targetHistoryContains(Integer x, Integer y, HashSet<Integer[]> targetHist) {
 		for (Integer[] arr : targetHist) {
-			if (arr[0] == x && arr[1] == y) {
+            // System.out.printf("CHECKING %d %d, SO FAR: %d %d\n", x.intValue(), y.intValue(), arr[0].intValue(), arr[1].intValue());
+			if (arr[0].intValue() == x.intValue() && arr[1].intValue() == y.intValue()) {
 				return true;
 			}
 		}

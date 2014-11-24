@@ -262,7 +262,22 @@ public class PlayerUtil {
 		resourcesArray[1] = numWater;
 		return resourcesArray;
 	}
-	
+
+    // Returns 0 if we need nothing for next outpost, 1 if we need water, 2 for land or 3 if both are needed
+	public static int resourceNeeds(Point[] grid, List<Pair> myOutPosts, int L, int W) {
+        int[] resources = myResources(grid, myOutPosts);
+        int needs = 0;
+        int outpost_count = myOutPosts.size();
+        if (resources[0] < outpost_count*L) {
+            needs = needs + 1;
+        }
+        if (resources[1] < outpost_count*W) {
+            needs = needs + 2;
+        }
+        return needs;
+
+	}
+
 	public static boolean hashMapContainsLocationAsValue(HashMap<Integer, Location> hm, Location l) {
 		Collection<Location> vals = hm.values();
 		for (Location val : vals) {

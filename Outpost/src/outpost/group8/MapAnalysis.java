@@ -62,11 +62,10 @@ public class MapAnalysis {
 		
 		for (Location l : shorePoints) {
 			for (Pair outpost : ourOutposts) {
-				if (l.x != outpost.x || l.y != outpost.y) {
+				if (l.x == outpost.x && l.y == outpost.y) {
+					System.out.println(l.x + ", " + l.y + " is not in openShore");
+				} else {
 					openShore.add(l);
-				}
-				else {
-					System.out.println(l.x + ", " + l.y + " should not be in openShore");
 				}
 			}
 		}
