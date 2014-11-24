@@ -104,7 +104,14 @@ public class Player extends outpost.sim.Player {
 				// We already have a target locked for this outpost
 				else if (targets.containsKey(i)) {
 					Location dest = targets.get(i);
-					Location step = PlayerUtil.movePairToDFS(pOutpost, new Point(dest.x, dest.y, false)).get(0);
+					Location step = null;
+					try {
+						step = PlayerUtil.movePairToDFS(pOutpost, new Point(dest.x, dest.y, Global.grid[dest.x][dest.y].water)).get(0);
+					} catch (Exception e) {
+						// TODO Auto-generated catch block
+						System.out.println("Destination cannot be water");
+						e.printStackTrace();
+					}
 					returnlist.add(new movePair(i, new Pair(step.x, step.y)));
 				}
 				// This is a new outpost - we need to give it a target piece of shoreline.
@@ -130,11 +137,19 @@ public class Player extends outpost.sim.Player {
 							": " + dest.x + ", " + dest.y);
 					targets.put(i, dest);
 					targetHistory.add(arrayify(outpost.x, outpost.y));
-					Location step = PlayerUtil.movePairToDFS(pOutpost,  new Point(dest.x, dest.y, false)).get(0);
+					Location step = null;
+					try {
+						step = PlayerUtil.movePairToDFS(pOutpost, new Point(dest.x, dest.y, Global.grid[dest.x][dest.y].water)).get(0);
+					} catch (Exception e) {
+						// TODO Auto-generated catch block
+						System.out.println("Destination cannot be water");
+						e.printStackTrace();
+						
+					}
 					System.out.println("next step for " + outpost.x + ", " + outpost.y + ": " + step.x + ", " + step.y);
 					returnlist.add(new movePair(i, new Pair(step.x, step.y)));
 				}
-				
+			
 			}
     	//}
 			

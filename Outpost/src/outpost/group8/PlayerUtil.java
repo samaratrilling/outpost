@@ -68,7 +68,10 @@ public class PlayerUtil {
 		return movedPair;
 	}
 	// Make sure destination is not water otherwise it will not find the path.
-	public static List<Location> movePairToDFS(Pair start, Point destination) {
+	public static List<Location> movePairToDFS  (Pair start, Point destination) throws Exception {
+		if (destination.water) {
+			throw new Exception("destination cannot be water");
+		}
 		List<Location> pathToTarget = new ArrayList<>();
 		Location temp = null;
 		if (start.x == destination.x && start.y == destination.y) {
@@ -299,4 +302,5 @@ public class PlayerUtil {
 		}
 		return null;
 	}
+
 }
