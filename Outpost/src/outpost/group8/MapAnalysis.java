@@ -41,8 +41,10 @@ public class MapAnalysis {
 			possibleNeighbors.add(new Location(l.x + 1, l.y - 1, false)); // northeast
 			
 			for (Location possible : possibleNeighbors) {
-				if (!water.contains(possible)) {
-					shore.add(possible);
+				for (Location w : water) {
+					if (possible.x != w.x && possible.y != w.y) {
+						shore.add(possible);
+					}
 				}
 			}
 		}
@@ -50,7 +52,7 @@ public class MapAnalysis {
 	}
 	
 	/**
-	 * For each outpost, if it's on shore, add the outpost to a list of our occupied shore territory.
+	 * Update the shore points that do not have one of our outposts on them.
 	 * @param ourOutposts
 	 * @param shorePoints
 	 * @return
@@ -58,15 +60,17 @@ public class MapAnalysis {
 	public static ArrayList<Location> updateOpenShore(List<Pair> ourOutposts, HashSet<Location> shorePoints) {
 		ArrayList<Location> openShore = new ArrayList<Location>();
 		
-		// Assume all shore points are open.
-		openShore.addAll(shorePoints);
-		for (Pair outpost : ourOutposts) {
-			Location toDelete = PlayerUtil.getLocationCorrespondingToPairFromHashSet(shorePoints, outpost);
-			if (toDelete != null) {
-				openShore.remove(toDelete);
-				System.out.println("success in understanding what's occupied");
+		for (Location l : shorePoints) {
+			for (Pair outpost : ourOutposts) {
+				if (l.x != outpost.x || l.y != outpost.y) {
+					openShore.add(l);
+				}
+				else {
+					System.out.println(l.x + ", " + l.y + " should not be in openShore");
+				}
 			}
 		}
+		
 		return openShore;
 	}
 	

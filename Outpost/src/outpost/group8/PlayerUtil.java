@@ -273,8 +273,7 @@ public class PlayerUtil {
 		return false;
 	}
 	
-	public static boolean hashSetContainsLocation(HashSet<Location> hs, Location l) {
-		Location[] vals = hs.toArray(new Location[1]);
+	public static boolean arrayListContainsLocation(ArrayList<Location> vals, Location l) {
 		for (Location val : vals) {
 			if (l.x == val.x && l.y == val.y) {
 				return true;

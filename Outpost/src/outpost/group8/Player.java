@@ -21,6 +21,7 @@ public class Player extends outpost.sim.Player {
 	// order always (fragile)
 	HashMap<Integer, Location> targets = new HashMap<Integer, Location>();
 	HashSet<Integer[]> targetHistory = new HashSet<Integer[]>();
+	ArrayList<Location> openShore = new ArrayList<Location>();
 
 	// Helper classes
 	static Global globalHelper = new Global();
@@ -62,8 +63,10 @@ public class Player extends outpost.sim.Player {
 		}
 		
 		// Do map analysis
-		waterPoints = MapAnalysis.findWater(locGrid);
-		shorePoints = MapAnalysis.findShore(waterPoints);
+		if (shorePoints == null || waterPoints == null) {
+			waterPoints = MapAnalysis.findWater(locGrid);
+			shorePoints = MapAnalysis.findShore(waterPoints);
+		}
 		// An arraylist of all the pieces of shore that do not currently have one of our
 		// pieces occupying them.
 		
@@ -74,7 +77,7 @@ public class Player extends outpost.sim.Player {
     	int numOutPost = Math.min(resources[0], resources[1]);
     	
     	// Keep track of the shoreline that we occupy.
-		ArrayList<Location> openShore = MapAnalysis.updateOpenShore(myOutPosts, shorePoints);
+		openShore = MapAnalysis.updateOpenShore(myOutPosts, shorePoints);
 
     	// Target water resources when there are less than 3 Outposts.
     	/*if (myOutPosts.size() < 3) {
@@ -96,7 +99,7 @@ public class Player extends outpost.sim.Player {
 			
 				// If it's already on the shore, keep it there.
 				Location outpost = new Location(pOutpost);
-				if (PlayerUtil.hashSetContainsLocation(shorePoints, outpost)) {
+				if (PlayerUtil.arrayListContainsLocation(openShore, outpost)) {
 					targets.put(i, outpost);
 					targetHistory.add(arrayify(outpost.x, outpost.y));
 					returnlist.add(new movePair(i, pOutpost));
@@ -124,10 +127,12 @@ public class Player extends outpost.sim.Player {
 						// Find the closest one.
 						if (!targetHistoryContains(possDest.x, possDest.y, targetHistory)) {
 							if (!PlayerUtil.hashMapContainsLocationAsValue(targets, possDest)) {
-								double dist = PlayerUtil.manhattanDistance(possDest, outpost);
-								if (dist < shortestDist && dist > 10) {
-									dest = possDest;
-									shortestDist = dist;
+								if (Global.grid[possDest.x][possDest.y].water == false) {
+									double dist = PlayerUtil.manhattanDistance(possDest, outpost);
+									if (dist < shortestDist && dist > 10) {
+										dest = possDest;
+										shortestDist = dist;
+									}
 								}
 							}
 						}
