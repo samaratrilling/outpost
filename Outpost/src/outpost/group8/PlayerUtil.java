@@ -2,6 +2,9 @@ package outpost.group8;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -65,7 +68,7 @@ public class PlayerUtil {
 		return movedPair;
 	}
 	// Make sure destination is not water otherwise it will not find the path.
-	public static List<Location> movePairToDFS(Pair start, Point destination, int size) {
+	public static List<Location> movePairToDFS(Pair start, Point destination) {
 		List<Location> pathToTarget = new ArrayList<>();
 		Location temp = null;
 		if (start.x == destination.x && start.y == destination.y) {
@@ -157,6 +160,19 @@ public class PlayerUtil {
 	public static double manhattanDistance(Pair a, Point b) {
 		return Math.abs(a.x - b.x) + Math.abs(a.y - b.y);
 	}
+	
+	public static double manhattanDistance(Pair a, Pair b) {
+		return Math.abs(a.x - b.x) + Math.abs(a.y - b.y);
+	}
+	
+	public static double manhattanDistance(Location a, Location b) {
+		return Math.abs(a.x - b.x) + Math.abs(a.y - b.y);
+	}
+	
+	public static double manhattanDistance(Location a, Pair b) {
+		return Math.abs(a.x - b.x) + Math.abs(a.y - b.y);
+	}
+
 
 	public static Point[] getGridCopy(Point[] grid) {
 		Point[] deepCopy = new Point[grid.length];
@@ -242,5 +258,45 @@ public class PlayerUtil {
 		resourcesArray[0] = numLand;
 		resourcesArray[1] = numWater;
 		return resourcesArray;
+	}
+	
+	public static boolean hashMapContainsLocationAsValue(HashMap<Integer, Location> hm, Location l) {
+		Collection<Location> vals = hm.values();
+		for (Location val : vals) {
+			if (l.x == val.x && l.y == val.y) {
+				return true;
+			}
+		}
+		return false;
+	}
+	
+	public static boolean hashSetContainsLocation(HashSet<Location> hs, Location l) {
+		Location[] vals = hs.toArray(new Location[1]);
+		for (Location val : vals) {
+			if (l.x == val.x && l.y == val.y) {
+				return true;
+			}
+		}
+		return false;
+	}
+	
+	public static boolean hashSetContainsPair(HashSet<Location> hs, Pair p) {
+		Location[] vals = hs.toArray(new Location[1]);
+		for (Location val : vals) {
+			if (p.x == val.x && p.y == val.y) {
+				return true;
+			}
+		}
+		return false;
+	}
+	
+	public static Location getLocationCorrespondingToPairFromHashSet(HashSet<Location> hs, Pair p) {
+		Location[] vals = hs.toArray(new Location[1]);
+		for (Location val : vals) {
+			if (p.x == val.x && p.y == val.y) {
+				return val;
+			}
+		}
+		return null;
 	}
 }
