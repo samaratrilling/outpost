@@ -59,21 +59,21 @@ public class Player extends outpost.sim.Player {
 		
 		if(!initGlobal){
 			locGrid = Global.initGlobal(gridin);
+			Global.initGlobal(r);
 			initGlobal = true;
 		}
 		
 		// Do map analysis
 		if (shorePoints == null || waterPoints == null) {
 			waterPoints = MapAnalysis.findWater(locGrid);
-			shorePoints = MapAnalysis.findShore(waterPoints);
+			shorePoints = MapAnalysis.findShores(waterPoints);
 		}
 		// An arraylist of all the pieces of shore that do not currently have one of our
 		// pieces occupying them.
 		
 		ArrayList<movePair> returnlist = new ArrayList<movePair>();
     	List<Pair> myOutPosts = king_outpostlist.get(this.id);
-    	int [] resources = PlayerUtil.myResources(gridin, myOutPosts);
-    	movePair next = null;
+       	movePair next = null;
     	
     	// Keep track of the shoreline that we occupy.
     	if (openShore.isEmpty()) {
@@ -86,85 +86,27 @@ public class Player extends outpost.sim.Player {
     		for (int i = 0 ; i < myOutPosts.size() ; i++) {
     			Pair pair = myOutPosts.get(i);
     			//Point closestWater = PlayerUtil.getClosestWaterNotOwnedByUs(pair, gridin, myOutPosts, this.id, r);
-    			Location followLocation = PlayerUtil.movePairToDFS(pair, new Point(60, 20,true)).get(0);
+    			Location followLocation =null;
+				try {
+					followLocation = PlayerUtil.movePairToDFS(pair, new Point(60, 20,false)).get(0);
+				} catch (Exception e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
     			//Location closeWater = new Location(closestWater);
     			pair = new Pair(followLocation.x, followLocation.y); //pair = new Pair(pair.x, pair.y-1);
     			next = new movePair(i, pair);
     			returnlist.add(next);
     		}
-    	}
+    	} 
     	else {*/
-			// Target water resources;
-			for (int i = 0; i < myOutPosts.size(); i++) {
-				Pair pOutpost = myOutPosts.get(i);
-			
-				// If it's already at its destination, keep it there.
-				Location outpost = new Location(pOutpost);
-				/*if ()
-				if (PlayerUtil.arrayListContainsLocation(openShore, outpost)) {
-					targets.put(i, outpost);
-					targetHistory.add(arrayify(new Integer(outpost.x), new Integer(outpost.y)));
-					returnlist.add(new movePair(i, pOutpost));
-				}*/
-				// We already have a target locked for this outpost
-				if (targets.containsKey(i)) {
-					Location dest = targets.get(i);
-					System.out.println("Target locked. destination: " + dest.x + ", " + dest.y);
-					Location step = null;
-					try {
-						step = PlayerUtil.movePairToDFS(pOutpost, new Point(dest.x, dest.y, Global.grid[dest.x][dest.y].water)).get(0);
-					} catch (Exception e) {
-						// TODO Auto-generated catch block
-						System.out.println("Destination cannot be water");
-						e.printStackTrace();
-					}
-					returnlist.add(new movePair(i, new Pair(step.x, step.y)));
-				}
-				// This is a new outpost - we need to give it a target piece of shoreline.
-				else {
-					Location dest = new Location(0, 0, false); // dummy value
-					double shortestDist = Double.MAX_VALUE;
-					for (Location possDest : openShore) {
-						// Look through all pieces of shore that are not occupied currently
-						// AND are not the intended destination of an existing outpost.
-						// Find the closest one.
-                        //
-                        if (targetHistoryContains(possDest.x, possDest.y, targetHistory)) continue;
-                        if (PlayerUtil.hashMapContainsLocationAsValue(targets, possDest)) continue;
-                        if (Global.grid[possDest.x][possDest.y].water == false) {
-                            double dist = PlayerUtil.manhattanDistance(possDest, outpost);
-                            if (dist < shortestDist && dist > 10) {
-                                dest = possDest;
-                                shortestDist = dist;
-                            }
-                        }
-					}
-					// Choose the closest piece of unoccupied shore.
-					System.out.println("destination chosen for outpost at " + outpost.x + ", " + outpost.y + 
-							": " + dest.x + ", " + dest.y);
-					targets.put(i, dest);
-					openShore.remove(dest);
-					targetHistory.add(arrayify(outpost.x, outpost.y));
-					Location step = null;
-					try {
-						step = PlayerUtil.movePairToDFS(pOutpost, new Point(dest.x, dest.y, Global.grid[dest.x][dest.y].water)).get(0);
-					} catch (Exception e) {
-						// TODO Auto-generated catch block
-						System.out.println("Destination cannot be water");
-						e.printStackTrace();
-						
-					}
-					System.out.println("next step for " + outpost.x + ", " + outpost.y + ": " + step.x + ", " + step.y);
-					returnlist.add(new movePair(i, new Pair(step.x, step.y)));
-				}
-			
-			}
+    		returnlist = Strategy.targetWaterResources(myOutPosts, targets, openShore, targetHistory);
     	//}
 			
 		for (movePair mp : returnlist) {
 			mp.printmovePair();
 			System.out.println();
-		}
+		} 
     	return returnlist;
     }
 	

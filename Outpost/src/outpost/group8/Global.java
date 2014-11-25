@@ -5,7 +5,8 @@ import outpost.group8.Location;
 
 public class Global {
 	public static Location [][] grid ;
-	
+	public static int r;
+
 	public Global(){
 		
 	}
@@ -17,5 +18,8 @@ public class Global {
 			}
 		}
 		return grid;
+	}
+	public static void initGlobal(int radius){
+		r = radius;
 	}
 }

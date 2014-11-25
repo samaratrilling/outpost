@@ -69,6 +69,10 @@ public class PlayerUtil {
 	}
 	// Make sure destination is not water otherwise it will not find the path.
 	public static List<Location> movePairToDFS  (Pair start, Point destination) throws Exception {
+		
+		boolean stayAwayFromEdge = destination.x >= Global.r 
+									&& destination.y >= Global.r ? true : false ;
+		
 		if (destination.water) {
 			throw new Exception("destination cannot be water");
 		}
@@ -94,7 +98,7 @@ public class PlayerUtil {
 			}
 			List<Location> neighbors = getAdjacent(temp);
 			for (Location l : neighbors) {
-				if (!visited[l.x][l.y]){
+				if (!visited[l.x][l.y]) {
 					q.add(l);
 					visited[l.x][l.y] = true;
 					l.parent = temp;
@@ -109,6 +113,10 @@ public class PlayerUtil {
 		return pathToTarget;
 	}
 
+	public static int distanceFromEdge(Location location) {
+		return Math.min(location.x, location.y);
+	}
+	
 	public static List<Location> getAdjacent(Location loc) {
 		List<Location> adjacentLocationsList = new ArrayList<>();
 		Location temp = null;
