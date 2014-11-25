@@ -1,6 +1,7 @@
 package outpost.group8;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 
@@ -46,6 +47,28 @@ public class MapAnalysis {
 						shore.add(possible);
 					}
 				}
+			}
+		}
+		return shore;
+	}
+	// O(n^2) of findShore.
+	public static HashSet<Location> findShores(HashSet<Location> water){
+		
+		int [][] possibleMove = {{0, -1}, {0, 1}, {1, 0}, {-1, 0}, {1, 1}, {-1, -1}, {-1, 1}, {1, -1}};
+		boolean [][]visited = new boolean[100][100];
+		for (int i = 0 ; i < 100 ; i++) {
+			Arrays.fill(visited[i], false);
+		}
+		HashSet<Location> shore = new HashSet<Location>();
+		for (Location l : water) {
+			ArrayList<Location> possibleNeighbors = new ArrayList<Location>();
+			for (int [] po : possibleMove) {
+				int row = l.x + po[0];
+				int col = l.y + po[1];
+				if (!Global.grid[row][col].water && !visited[row][col]) {
+					shore.add(Global.grid[row][col]);		
+				}
+				visited[row][col] = true;
 			}
 		}
 		return shore;
