@@ -3,10 +3,12 @@ package outpost.group8;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.PriorityQueue;
 
 import outpost.sim.Pair;
 import outpost.sim.Point;
@@ -67,6 +69,113 @@ public class PlayerUtil {
 		}
 		return movedPair;
 	}
+	
+	public static Location getShoreFromWater(Location location){
+		
+		int [][] moves = {{1, 0}, {0, 1}, {-1, 0}, {0, -1} };
+		int x = 0 ;
+		int y = 0 ;
+		boolean [][] visited = new boolean[100][100];
+		for (int i = 0 ; i < 100 ; i++) {
+			Arrays.fill(visited[i], false);
+		}
+		visited[location.x][location.y] = true;
+		Location temp = location;
+		LinkedList <Location>  q = new LinkedList<>();
+		q.add(temp);
+		while (temp.water) {
+			temp = q.removeFirst();
+			x = temp.x;
+			y = temp.y;
+			for (int [] m : moves) {
+				x += m[0];
+				y += m[1];
+				if (!visited[x][y]){
+					q.add(new Location(Global.grid[x][y]));
+					visited[x][y] = true;
+				}
+			}
+			
+		}
+		
+		
+		return temp;
+	}
+	
+	
+	// Make sure destination is not water otherwise it will not find the path.
+		public static List<Location> movePairToDFSAwayEdge(Pair start, Point destination) throws Exception {
+			
+			boolean stayAwayFromEdge = destination.x >= Global.r 
+										&& destination.y >= Global.r ? true : false ;
+			
+			
+									
+			
+			if (destination.water) {
+				throw new Exception("destination cannot be water");
+			}
+			
+			
+			
+			List<Location> pathToTarget = new ArrayList<>();
+			Location temp = null;
+			if (start.x == destination.x && start.y == destination.y) {
+				pathToTarget.add(new Location(start));
+				return pathToTarget;
+			}
+			Location st = new Location(destination);
+			List<Location> q = new LinkedList<>();
+			boolean[][] visited = new boolean[100][100];
+			for (int i = 0; i < 100; i++) {
+				Arrays.fill(visited[i], false);
+			}
+			q.add(st);
+			visited[st.x][st.y] = true;
+			
+			while (!q.isEmpty()) {
+				temp = ((LinkedList<Location>) q).removeFirst();
+				if (temp.x == start.x && temp.y == start.y) {
+					break;
+				}
+				List<Location> neighbors = getAdjacent(temp);
+				for (Location l : neighbors) {
+					if (!visited[l.x][l.y]) {
+						
+						if (stayAwayFromEdge) {
+							
+							if (distanceFromEdge(temp) <= Global.r){
+								int [] moves = getPossibleAwayEdgeMoves(Global.idCurrent);
+								if (isYGreater(l)){
+									
+								}
+								
+							}
+							
+							if (distanceFromEdge(l) < Global.r && distanceFromEdge(temp) > Global.r) {
+								continue;
+							}
+							
+							q.add(l);
+							visited[l.x][l.y] = true;
+							l.parent = temp;
+							
+						}
+						
+						q.add(l);
+						visited[l.x][l.y] = true;
+						l.parent = temp;
+					}
+				}
+			}
+			while (temp.parent != null ){
+				pathToTarget.add(temp.parent);
+				temp = temp.parent;
+			}
+			
+			return pathToTarget;
+		}
+	
 	// Make sure destination is not water otherwise it will not find the path.
 	public static List<Location> movePairToDFS  (Pair start, Point destination) throws Exception {
 		
@@ -76,13 +185,16 @@ public class PlayerUtil {
 		if (destination.water) {
 			throw new Exception("destination cannot be water");
 		}
+		
+		
+		
 		List<Location> pathToTarget = new ArrayList<>();
 		Location temp = null;
 		if (start.x == destination.x && start.y == destination.y) {
 			pathToTarget.add(new Location(start));
 			return pathToTarget;
 		}
-		Location st = new Location(start);
+		Location st = new Location(destination);
 		List<Location> q = new LinkedList<>();
 		boolean[][] visited = new boolean[100][100];
 		for (int i = 0; i < 100; i++) {
@@ -93,7 +205,7 @@ public class PlayerUtil {
 		
 		while (!q.isEmpty()) {
 			temp = ((LinkedList<Location>) q).removeFirst();
-			if (temp.x == destination.x && temp.y == destination.y) {
+			if (temp.x == start.x && temp.y == start.y) {
 				break;
 			}
 			List<Location> neighbors = getAdjacent(temp);
@@ -106,15 +218,60 @@ public class PlayerUtil {
 			}
 		}
 		while (temp.parent != null ){
-			pathToTarget.add(0,temp);
+			pathToTarget.add(temp.parent);
 			temp = temp.parent;
 		}
 		
 		return pathToTarget;
 	}
 
+	public static boolean isYGreater(Location location) {
+		
+		if (location.x <=50 && location.y <= 50) {
+			return Math.min(location.x, location.y) == location.x;
+		} else if (location.x <= 50 && location.y > 50) {
+			return Math.min(location.x, 100-location.y) == location.x;
+		} else if (location.x >50 && location.y <= 50) {
+			return Math.min(100 - location.x, location.y) == 100 - location.x ;
+		}else if (location.x >50 && location.y > 50) {
+			return Math.min(100-location.x, 100-location.y) == 100-location.x;
+		}
+		
+		return false;
+	}
+	
+	public static int[] getPossibleAwayEdgeMoves (int id){
+		
+		if (id == 0) {
+			int [] posMoves  = {1, 1};
+			return posMoves;
+		} 
+		if (id == 1) {
+			int [] posMoves  = {-1, 1};
+			return posMoves;
+		}
+		if (id == 2) {
+			int [] posMoves  = {-1, -1};
+			return posMoves;
+		}
+		if (id == 0) {
+			int [] posMoves  = {1,-1};
+			return posMoves;
+		}
+		return null;
+		
+	}
 	public static int distanceFromEdge(Location location) {
-		return Math.min(location.x, location.y);
+		if (location.x <=50 && location.y <= 50) {
+			return Math.min(location.x, location.y);
+		} else if (location.x <= 50 && location.y > 50) {
+			return Math.min(location.x, 100-location.y);
+		} else if (location.x >50 && location.y <= 50) {
+			return Math.min(100 - location.x, location.y);
+		}else if (location.x >50 && location.y > 50) {
+			return Math.min(100-location.x, 100-location.y);
+		}
+		return -1;
 	}
 	
 	public static List<Location> getAdjacent(Location loc) {
@@ -171,7 +328,9 @@ public class PlayerUtil {
 	public static double manhattanDistance(Pair a, Point b) {
 		return Math.abs(a.x - b.x) + Math.abs(a.y - b.y);
 	}
-	
+	public static int manhattanDistance(Pair a, Location b) {
+		return Math.abs(a.x - b.x) + Math.abs(a.y - b.y);
+	}
 	public static double manhattanDistance(Pair a, Pair b) {
 		return Math.abs(a.x - b.x) + Math.abs(a.y - b.y);
 	}
@@ -324,5 +483,52 @@ public class PlayerUtil {
 		}
 		return null;
 	}
+
+	
+	
+	public static Location getClosestShorePoint(
+			int outpostId,
+			List<Pair> myOutPosts,
+			HashSet<Location> shorePoints) {
+		// TODO Auto-generated method stub
+			Pair pair = myOutPosts.get(outpostId);
+			Comparator<Location> locationComp = new Comparator<Location>(){
+				public int compare(Location l1, Location l2){
+					return l1.value - l2.value;
+				}
+			};
+			
+			for (Location loc : shorePoints ){
+				loc.value = PlayerUtil.manhattanDistance(pair, loc);
+			}
+			
+			PriorityQueue<Location> locHeap = new PriorityQueue<Location>(shorePoints.size(),locationComp);
+			
+			for (Location l : shorePoints){
+				locHeap.add(l);
+			}
+			Location temp = null;
+			while (!locHeap.isEmpty()) {
+				temp = locHeap.poll();
+				boolean found = false;
+				for (Pair p : myOutPosts) {
+					if (p.x == pair.x && p.y == pair.y){
+						continue;
+					}
+					if (manhattanDistance(p, temp) <= Global.r+4){
+						found = true;
+						break;
+					}
+				}
+				if (!found) {
+					break;
+				}
+				
+			}
+		return temp;
+	}
+	
+	
+	
 
 }

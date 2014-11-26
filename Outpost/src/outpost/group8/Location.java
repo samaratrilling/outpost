@@ -16,6 +16,7 @@ public class Location {
     public boolean water;
     public double distance;
     public Location parent;
+    public int value;
     
     //public int owner;
     public ArrayList<Pair> ownerlist = new ArrayList<Pair>();

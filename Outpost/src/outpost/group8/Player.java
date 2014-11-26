@@ -59,7 +59,7 @@ public class Player extends outpost.sim.Player {
 		
 		if(!initGlobal){
 			locGrid = Global.initGlobal(gridin);
-			Global.initGlobal(r);
+			Global.initGlobal(r, id);
 			initGlobal = true;
 		}
 		
@@ -68,45 +68,39 @@ public class Player extends outpost.sim.Player {
 			waterPoints = MapAnalysis.findWater(locGrid);
 			shorePoints = MapAnalysis.findShores(waterPoints);
 		}
-		// An arraylist of all the pieces of shore that do not currently have one of our
-		// pieces occupying them.
 		
-		ArrayList<movePair> returnlist = new ArrayList<movePair>();
+		ArrayList<movePair> returnlist = null;
     	List<Pair> myOutPosts = king_outpostlist.get(this.id);
-       	movePair next = null;
     	
     	// Keep track of the shoreline that we occupy.
     	if (openShore.isEmpty()) {
     		openShore = MapAnalysis.updateOpenShore(myOutPosts, shorePoints);
     	}
-
+    	Location followLocation =null;
     	// Target water resources when there are less than 3 Outposts.
-    	/*if (myOutPosts.size() < 3) {
-    		
-    		for (int i = 0 ; i < myOutPosts.size() ; i++) {
-    			Pair pair = myOutPosts.get(i);
-    			//Point closestWater = PlayerUtil.getClosestWaterNotOwnedByUs(pair, gridin, myOutPosts, this.id, r);
-    			Location followLocation =null;
-				try {
-					followLocation = PlayerUtil.movePairToDFS(pair, new Point(60, 20,false)).get(0);
-				} catch (Exception e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				}
-    			//Location closeWater = new Location(closestWater);
-    			pair = new Pair(followLocation.x, followLocation.y); //pair = new Pair(pair.x, pair.y-1);
-    			next = new movePair(i, pair);
-    			returnlist.add(next);
-    		}
+    	Random rand = new Random();
+    	int ran = rand.nextInt(3);
+    	
+    	if (ran == 0) {
+    		// Strict attack to waters with less space in between
+    		returnlist = Strategy.targetWaterResources(myOutPosts, targets, openShore, targetHistory);	
     	} 
-    	else {*/
-    		returnlist = Strategy.targetWaterResources(myOutPosts, targets, openShore, targetHistory);
-    	//}
-			
+    	else if (ran == 1) {
+    		// Lenient attack to waters
+    		returnlist = Strategy.attackWater(myOutPosts, shorePoints);
+    	}
+    	else {
+    		// Angular expansion 
+    		// group needs to start from the id =1 for this to work, 
+    		// need coordinate translation for other ids
+    		returnlist = Strategy.angularExpansion(myOutPosts, shorePoints, ran);	
+     	}
+    	/*
 		for (movePair mp : returnlist) {
 			mp.printmovePair();
 			System.out.println();
-		} 
+		}
+		*/
     	return returnlist;
     }
 	

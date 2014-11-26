@@ -1,9 +1,11 @@
 package outpost.group8;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Random;
 
 import outpost.sim.Pair;
 import outpost.sim.Point;
@@ -83,6 +85,96 @@ public class Strategy {
 			}
 		
 		}
+		return returnlist;
+	}
+
+	public static ArrayList<movePair> attackWater(
+			List<Pair> myOutPosts,
+			HashSet<Location> shorePoints) {
+		// TODO Auto-generated method stub
+		ArrayList<movePair> returnlist = new ArrayList<movePair>();
+		Location followLocation = null;
+		movePair next = null;
+		for (int i = 0 ; i < myOutPosts.size() ; i++ ) {
+			Pair pair = myOutPosts.get(i);
+			Location temp = PlayerUtil.getClosestShorePoint(i, myOutPosts, shorePoints);
+			try {
+				followLocation = PlayerUtil.movePairToDFS(pair, new Point(temp.x, temp.y, false)).get(0);
+			} catch (Exception e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		
+			pair = new Pair(followLocation.x, followLocation.y); 
+			next = new movePair(i, pair);
+			returnlist.add(next);
+		}
+		return returnlist;
+	}
+
+	public static ArrayList<movePair> angularExpansion(
+			List<Pair> myOutPosts,
+			HashSet<Location> shorePoints,
+			int r) {
+		// TODO Auto-generated method stub
+		ArrayList<movePair> returnlist = new ArrayList<movePair>();
+		Location followLocation = null;
+		movePair next = null;
+		double granularity = r * myOutPosts.size();
+		int [] angles = new int [myOutPosts.size()];
+		int delta= 90/(myOutPosts.size()+1);
+		angles[0] = delta;
+		Arrays.fill(angles, 0);
+		for (int i = 1 ; i < myOutPosts.size() ; i++ ){
+			angles[i] = angles[i-1] + delta;
+		}
+		for (int i = 0 ; i < myOutPosts.size() ; i++ ) {
+			int deltaX = (int)(Math.cos(Math.toRadians(angles[i])) * granularity);
+			int deltaY = (int)(Math.sin(Math.toRadians(angles[i])) * granularity);
+			Location temp = null;
+			if (!PlayerUtil.isValidBoundry(deltaX, deltaY)) {
+				
+				for (Location loc : shorePoints) {
+					boolean flag = false;
+					for (Pair p : myOutPosts) {
+						
+						if (PlayerUtil.manhattanDistance(p, loc) < 2.5*r){
+							flag = true;
+							break;
+						} 
+						
+					}
+					if (!flag) {
+						temp = loc;
+						break;
+					}
+					
+				}
+				
+				
+				//returnlist.add(Strategy.targetWaterResources(myOutPosts, targets, openShore, targetHistory).get(i));
+				
+				
+			} else {
+				temp = Global.grid[deltaX][deltaY];
+				temp = PlayerUtil.getShoreFromWater(temp);
+			}
+			
+			Pair pair = myOutPosts.get(i);
+			try {
+				followLocation = PlayerUtil.movePairToDFS(pair, new Point(temp.x, temp.y,false)).get(0);
+			} catch (Exception e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+			//Location closeWater = new Location(closestWater);
+			pair = new Pair(followLocation.x, followLocation.y); //pair = new Pair(pair.x, pair.y-1);
+			next = new movePair(i, pair);
+			returnlist.add(next);
+			
+			
+		}
+		
 		return returnlist;
 	}
 
