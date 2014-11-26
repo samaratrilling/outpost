@@ -38,7 +38,12 @@ public class Strategy {
 				System.out.println("Target locked. destination: " + dest.x + ", " + dest.y);
 				Location step = null;
 				try {
-					step = PlayerUtil.movePairToDFS(pOutpost, new Point(dest.x, dest.y, Global.grid[dest.x][dest.y].water)).get(0);
+					if (i == myOutPosts.size()-1 && i > 5){
+						step = PlayerUtil.movePairToDFS(pOutpost, new Point(0, 0,false)).get(0);
+					}else {
+						step = PlayerUtil.movePairToDFS(pOutpost, new Point(dest.x, dest.y, Global.grid[dest.x][dest.y].water)).get(0);
+					}
+					
 				} catch (Exception e) {
 					// TODO Auto-generated catch block
 					System.out.println("Destination cannot be water");
@@ -73,7 +78,12 @@ public class Strategy {
 				targetHistory.add(Player.arrayify(outpost.x, outpost.y));
 				Location step = null;
 				try {
-					step = PlayerUtil.movePairToDFS(pOutpost, new Point(dest.x, dest.y, Global.grid[dest.x][dest.y].water)).get(0);
+					if (i == myOutPosts.size()-1 && i > 5){
+						step = PlayerUtil.movePairToDFS(pOutpost, new Point(0, 0,false)).get(0);
+					}else {
+					
+						step = PlayerUtil.movePairToDFS(pOutpost, new Point(dest.x, dest.y, Global.grid[dest.x][dest.y].water)).get(0);
+					}
 				} catch (Exception e) {
 					// TODO Auto-generated catch block
 					System.out.println("Destination cannot be water");
@@ -95,11 +105,20 @@ public class Strategy {
 		ArrayList<movePair> returnlist = new ArrayList<movePair>();
 		Location followLocation = null;
 		movePair next = null;
+		int [][] moves = {{-1, 0}, {1, 0}, {0,1}, {0, -1}};
 		for (int i = 0 ; i < myOutPosts.size() ; i++ ) {
 			Pair pair = myOutPosts.get(i);
 			Location temp = PlayerUtil.getClosestShorePoint(i, myOutPosts, shorePoints);
 			try {
-				followLocation = PlayerUtil.movePairToDFS(pair, new Point(temp.x, temp.y, false)).get(0);
+				
+				if (i == myOutPosts.size()-1 && i > 5){
+					followLocation = PlayerUtil.movePairToDFS(pair, new Point(0, 0,false)).get(0);
+				}else {
+					followLocation = PlayerUtil.movePairToDFS(pair, new Point(temp.x, temp.y, false)).get(0);
+				}
+				
+				
+				
 			} catch (Exception e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
@@ -112,7 +131,8 @@ public class Strategy {
 		return returnlist;
 	}
 
-	public static ArrayList<movePair> angularExpansion(
+	
+	public static ArrayList<movePair> protectHome(
 			List<Pair> myOutPosts,
 			HashSet<Location> shorePoints,
 			int r) {
@@ -120,7 +140,7 @@ public class Strategy {
 		ArrayList<movePair> returnlist = new ArrayList<movePair>();
 		Location followLocation = null;
 		movePair next = null;
-		double granularity = r * myOutPosts.size();
+		double granularity = 6;
 		int [] angles = new int [myOutPosts.size()];
 		int delta= 90/(myOutPosts.size()+1);
 		angles[0] = delta;
@@ -162,6 +182,84 @@ public class Strategy {
 			
 			Pair pair = myOutPosts.get(i);
 			try {
+				if (i == myOutPosts.size()-1 && i > 5){
+					followLocation = PlayerUtil.movePairToDFS(pair, new Point(0, 0,false)).get(0);
+				} else {
+					followLocation = PlayerUtil.movePairToDFS(pair, new Point(temp.x, temp.y,false)).get(0);
+				}
+				
+			} catch (Exception e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+			//Location closeWater = new Location(closestWater);
+			pair = new Pair(followLocation.x, followLocation.y); //pair = new Pair(pair.x, pair.y-1);
+			next = new movePair(i, pair);
+			returnlist.add(next);
+			
+			
+		}
+		
+		return returnlist;
+	}
+	
+	
+	
+	public static ArrayList<movePair> angularExpansion(
+			List<Pair> myOutPosts,
+			HashSet<Location> shorePoints,
+			int r) {
+		// TODO Auto-generated method stub
+		ArrayList<movePair> returnlist = new ArrayList<movePair>();
+		Location followLocation = null;
+		movePair next = null;
+		double granularity = r * myOutPosts.size()*10;
+		int [] angles = new int [myOutPosts.size()];
+		int delta= 90/(myOutPosts.size()+1);
+		angles[0] = delta;
+		Arrays.fill(angles, 0);
+		for (int i = 1 ; i < myOutPosts.size() ; i++ ){
+			angles[i] = angles[i-1] + delta;
+		}
+		for (int i = 0 ; i < myOutPosts.size() ; i++ ) {
+			int deltaX = (int)(Math.cos(Math.toRadians(angles[i])) * granularity);
+			int deltaY = (int)(Math.sin(Math.toRadians(angles[i])) * granularity);
+			Location temp = null;
+			if (!PlayerUtil.isValidBoundry(deltaX, deltaY)) {
+				
+				for (Location loc : shorePoints) {
+					boolean flag = false;
+					for (Pair p : myOutPosts) {
+						
+						if (PlayerUtil.manhattanDistance(p, loc) < 2.5*r){
+							flag = true;
+							break;
+						} 
+						
+					}
+					if (!flag) {
+						temp = loc;
+						break;
+					}
+					
+				}
+				
+				
+				//returnlist.add(Strategy.targetWaterResources(myOutPosts, targets, openShore, targetHistory).get(i));
+				
+				
+			} else {
+				temp = Global.grid[deltaX][deltaY];
+				temp = PlayerUtil.getShoreFromWater(temp);
+			}
+			
+			Pair pair = myOutPosts.get(i);
+			try {
+				if (i == myOutPosts.size()-1 && i > 5){
+					followLocation = PlayerUtil.movePairToDFS(pair, new Point(0, 0,false)).get(0);
+				} else {
+					followLocation = PlayerUtil.movePairToDFS(pair, new Point(temp.x, temp.y,false)).get(0);
+				}
 				followLocation = PlayerUtil.movePairToDFS(pair, new Point(temp.x, temp.y,false)).get(0);
 			} catch (Exception e) {
 				// TODO Auto-generated catch block

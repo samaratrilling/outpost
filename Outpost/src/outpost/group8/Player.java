@@ -14,6 +14,8 @@ public class Player extends outpost.sim.Player {
 	static int[] theta = new int[100];
 	static int counter = 0;
 	boolean flag = true;
+	static int count = 0 ;
+	static int upperRandom = 3;
 	
 	static HashSet<Location> waterPoints;
 	static HashSet<Location> shorePoints;
@@ -71,30 +73,38 @@ public class Player extends outpost.sim.Player {
 		
 		ArrayList<movePair> returnlist = null;
     	List<Pair> myOutPosts = king_outpostlist.get(this.id);
+    	count++;
     	
     	// Keep track of the shoreline that we occupy.
     	if (openShore.isEmpty()) {
     		openShore = MapAnalysis.updateOpenShore(myOutPosts, shorePoints);
     	}
     	Location followLocation =null;
+    	
+    	
     	// Target water resources when there are less than 3 Outposts.
     	Random rand = new Random();
-    	int ran = rand.nextInt(3);
+    	int ran = rand.nextInt(2);
+
+    	int applyExpansion = rand.nextInt(7);
     	
-    	if (ran == 0) {
-    		// Strict attack to waters with less space in between
-    		returnlist = Strategy.targetWaterResources(myOutPosts, targets, openShore, targetHistory);	
-    	} 
-    	else if (ran == 1) {
+    	if (applyExpansion == 5 && count < 980 ) {
+    		returnlist = Strategy.angularExpansion(myOutPosts, shorePoints, r);	
+    	} else if ((ran == 0 || applyExpansion == 3)&& count < 980) {
     		// Lenient attack to waters
     		returnlist = Strategy.attackWater(myOutPosts, shorePoints);
+    		
+    	} 
+    	else if (ran == 1 && count < 980 ) {
+    		// Strict attack to waters with less space in between
+    		// Samara's water attack 
+    		returnlist = Strategy.targetWaterResources(myOutPosts, targets, openShore, targetHistory);	
+    		//returnlist = Strategy.protectHome(myOutPosts, shorePoints, r);
+    	} else {
+    		 // Lenient attack to waters
+    	    	returnlist = Strategy.attackWater(myOutPosts, shorePoints);	
     	}
-    	else {
-    		// Angular expansion 
-    		// group needs to start from the id =1 for this to work, 
-    		// need coordinate translation for other ids
-    		returnlist = Strategy.angularExpansion(myOutPosts, shorePoints, ran);	
-     	}
+
     	/*
 		for (movePair mp : returnlist) {
 			mp.printmovePair();
