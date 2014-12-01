@@ -77,7 +77,15 @@ public class Player extends outpost.sim.Player {
     		openShore = MapAnalysis.updateOpenShore(myOutPosts, shorePoints);
     	}
     	Location followLocation =null;
-    	// Target water resources when there are less than 3 Outposts.
+    	
+    	// Do initial defensive moves. Move first one to closest water.
+    	// Then have next three form defensive shell around the base, at (0, 2r),
+    	// (2r, 2r) and (2r, 0). This should set it up so the shell regenerates even if
+    	// it gets destroyed later on.
+    	if (myOutPosts.size() < 5) {
+    		returnlist = Strategy.initialDefense(myOutPosts, openShore, r, targets, targetHistory);
+    		return returnlist;
+    	}
     	Random rand = new Random();
     	int ran = rand.nextInt(3);
     	
@@ -87,7 +95,7 @@ public class Player extends outpost.sim.Player {
     	} 
     	else if (ran == 1) {
     		// Lenient attack to waters
-    		returnlist = Strategy.attackWater(myOutPosts, shorePoints);
+    		returnlist = Strategy.attackWater(myOutPosts, shorePoints, targets);
     	}
     	else {
     		// Angular expansion 

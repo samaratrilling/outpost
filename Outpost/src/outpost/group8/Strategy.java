@@ -12,6 +12,69 @@ import outpost.sim.Point;
 import outpost.sim.movePair;
 
 public class Strategy {
+	
+	public static ArrayList<movePair> initialDefense(
+			List<Pair> myOutPosts,
+			ArrayList<Location> openShore,
+			int r,
+			HashMap<Integer, Location> targets,
+			HashSet<Integer[]> targetHistory) {
+		ArrayList<movePair> returnlist = new ArrayList<movePair>();
+
+		// If this is the first outpost, send it to the closest water.
+		if (myOutPosts.size() == 1) {
+			return targetWaterResources(myOutPosts,
+					targets,
+					openShore,
+					targetHistory);
+		}
+		
+		for (int i = 0; i < myOutPosts.size(); i++) {
+			
+			// Set up references
+			Pair pOutpost = myOutPosts.get(i);
+			Location outpost = new Location(pOutpost);
+			Location dest = null;
+			
+			// Check if target is already locked (for the first 1, 2, or 3 outposts)
+			if (targets.containsKey(i)) {
+				dest = targets.get(i);
+				System.out.println("Target locked. destination: " + dest.x + ", " + dest.y);
+
+			}
+			else {
+				if (myOutPosts.size() == 2) {
+					dest = new Location(0, 2*r, false);
+				}
+				else if (myOutPosts.size() == 3) {
+					dest = new Location(2*r, 0, false);
+				}
+				else {
+					dest = new Location(2*r, 2*r, false);
+				}
+				targets.put(i, dest);
+				openShore.remove(dest);
+				targetHistory.add(Player.arrayify(outpost.x, outpost.y));
+				
+			}
+			Location step = generateNextStep(pOutpost, dest, outpost);
+			returnlist.add(new movePair(i, new Pair(step.x, step.y)));
+		}
+		return returnlist;
+	}
+	
+	public static Location generateNextStep(Pair pOutpost, Location dest, Location outpost) {
+		try {
+			Location step = PlayerUtil.movePairToDFS(pOutpost, new Point(dest.x, dest.y, Global.grid[dest.x][dest.y].water)).get(0);
+			System.out.println("next step for " + outpost.x + ", " + outpost.y + ": " + step.x + ", " + step.y);
+			return step;
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			System.out.println("Destination cannot be water");
+			e.printStackTrace();
+			return null;
+		}
+	}
 
 	public static ArrayList<movePair> targetWaterResources(
 			List<Pair> myOutPosts,
@@ -26,24 +89,12 @@ public class Strategy {
 		
 			// If it's already at its destination, keep it there.
 			Location outpost = new Location(pOutpost);
-			/*if ()
-			if (PlayerUtil.arrayListContainsLocation(openShore, outpost)) {
-				targets.put(i, outpost);
-				targetHistory.add(arrayify(new Integer(outpost.x), new Integer(outpost.y)));
-				returnlist.add(new movePair(i, pOutpost));
-			}*/
+
 			// We already have a target locked for this outpost
 			if (targets.containsKey(i)) {
 				Location dest = targets.get(i);
 				System.out.println("Target locked. destination: " + dest.x + ", " + dest.y);
-				Location step = null;
-				try {
-					step = PlayerUtil.movePairToDFS(pOutpost, new Point(dest.x, dest.y, Global.grid[dest.x][dest.y].water)).get(0);
-				} catch (Exception e) {
-					// TODO Auto-generated catch block
-					System.out.println("Destination cannot be water");
-					e.printStackTrace();
-				}
+				Location step = generateNextStep(pOutpost, dest, outpost);
 				returnlist.add(new movePair(i, new Pair(step.x, step.y)));
 			}
 			// This is a new outpost - we need to give it a target piece of shoreline.
@@ -90,24 +141,37 @@ public class Strategy {
 
 	public static ArrayList<movePair> attackWater(
 			List<Pair> myOutPosts,
-			HashSet<Location> shorePoints) {
+			HashSet<Location> shorePoints,
+			HashMap<Integer, Location> targets) {
 		// TODO Auto-generated method stub
 		ArrayList<movePair> returnlist = new ArrayList<movePair>();
 		Location followLocation = null;
 		movePair next = null;
 		for (int i = 0 ; i < myOutPosts.size() ; i++ ) {
 			Pair pair = myOutPosts.get(i);
-			Location temp = PlayerUtil.getClosestShorePoint(i, myOutPosts, shorePoints);
-			try {
-				followLocation = PlayerUtil.movePairToDFS(pair, new Point(temp.x, temp.y, false)).get(0);
-			} catch (Exception e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
+			Location outpost = new Location(pair);
+			
+			if (targets.containsKey(i)) {
+				Location dest = targets.get(i);
+				System.out.println("Target locked. destination: " + dest.x + ", " + dest.y);
+				Location step = generateNextStep(pair, dest, outpost);
+				returnlist.add(new movePair(i, new Pair(step.x, step.y)));
 			}
-		
-			pair = new Pair(followLocation.x, followLocation.y); 
-			next = new movePair(i, pair);
-			returnlist.add(next);
+			
+			else {
+				Location temp = PlayerUtil.getClosestShorePoint(i, myOutPosts, shorePoints);
+				try {
+					followLocation = PlayerUtil.movePairToDFS(pair, new Point(temp.x, temp.y, false)).get(0);
+				} catch (Exception e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+			
+				pair = new Pair(followLocation.x, followLocation.y); 
+				
+				next = new movePair(i, pair);
+				returnlist.add(next);
+			}	
 		}
 		return returnlist;
 	}
