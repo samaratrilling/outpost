@@ -90,7 +90,7 @@ public class Player extends outpost.sim.Player {
 		}*/
     	//else {
     		ArrayList<Pair> positions = new ArrayList<Pair>();
-    		positions = PlayerUtil.getTargetPoints(prarr.get(prarr.size()-1),size);
+    		positions = PlayerUtil.getTargetPoints(prarr.get(prarr.size()-1),size, grid);
     		boolean gotit=false;
     		while (!gotit) {
     			//Random random = new Random();
